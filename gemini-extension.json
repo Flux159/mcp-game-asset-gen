@@ -1,6 +1,6 @@
 {
   "name": "mcp-asset-gen",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "mcpServers": {
     "asset-gen": {
       "command": "npx",

@@ -1,6 +1,6 @@
 {
   "name": "mcp-game-asset-gen",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "MCP server for asset generation - image, video, audio, and 3D APIs for game development",
   "main": "dist/index.js",
   "type": "module",
