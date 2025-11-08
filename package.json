@@ -1,5 +1,5 @@
 {
-  "name": "mcp-asset-gen",
+  "name": "mcp-game-asset-gen",
   "version": "1.0.0",
   "description": "MCP server for asset generation - image, video, audio, and 3D APIs for game development",
   "main": "dist/index.js",

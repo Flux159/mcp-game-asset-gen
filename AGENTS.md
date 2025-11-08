@@ -2,6 +2,18 @@
 
 This file contains instructions for future agents working on this MCP server project.
 
+## Design Philosophy: Fall into the Pit of Success
+
+This MCP server is designed as a development tool that should make users "fall into the pit of success." This means:
+
+- **Sensible Defaults**: All tools should work well with minimal configuration
+- **Automatic Optimization**: The server should automatically choose the best parameters for quality
+- **Consistency by Default**: Reference images for 3D generation must maintain object consistency across views
+- **Error Prevention**: Design APIs that prevent common mistakes (like generating different objects for different views)
+- **Quality First**: Prioritize output quality over exposing every parameter option
+
+When adding new features, always ask: "Will this help users succeed without needing to understand the underlying complexity?"
+
 ## Development Workflow
 
 ### Testing
@@ -91,6 +103,23 @@ Optional environment variables:
 - Helper functions with automatic reference generation in `src/providers/model3dHelpers.ts`
 - Tool schemas and handlers in `src/index.ts`
 - Comprehensive tests in `src/model3dHelpers.test.ts`
+
+### Reference Image Consistency (Critical for 3D Quality)
+
+**Problem**: Generating different objects for different views creates unusable 3D models.
+
+**Solution**: The `generateReferenceImages()` function ensures consistency by:
+1. **First View**: Generated from text prompt (usually front view)
+2. **Subsequent Views**: Use previous image(s) as input with modified prompts
+3. **View Ordering**: Always generates front view first for consistency
+4. **Prompt Engineering**: Uses "Create a [view] view of the same object, maintaining exact consistency"
+
+**Implementation Requirements**:
+- Never generate multiple views independently from text prompts
+- Always use image-to-image generation for subsequent views
+- Maintain sharp, high-quality prompts with specific camera models
+- Include "sharp edges, fine details" and "Sony A7R IV" for quality
+- This ensures users "fall into the pit of success" with consistent 3D generation
 
 ## Testing Guidelines
 

@@ -21,7 +21,7 @@ export interface Model3DGenerationOptionsExtended extends Model3DGenerationOptio
   cleanupReferences?: boolean;
 }
 
-// Helper function to generate reference images for 3D modeling
+// Helper function to generate reference images for 3D modeling with consistency
 export const generateReferenceImages = async (
   prompt: string,
   outputBasePath: string,
@@ -30,40 +30,92 @@ export const generateReferenceImages = async (
 ): Promise<string[]> => {
   const referencePaths: string[] = [];
   
-  for (const view of views) {
+  // Sort views to ensure front is generated first for consistency
+  const sortedViews = [...views].sort((a, b) => {
+    if (a === 'front') return -1;
+    if (b === 'front') return 1;
+    return 0;
+  });
+  
+  for (let i = 0; i < sortedViews.length; i++) {
+    const view = sortedViews[i];
     const outputPath = outputBasePath.replace(/\.[^.]+$/, `_ref_${view}.png`);
     
-    let viewPrompt = `${prompt}, ${view} view, `;
-    viewPrompt += 'technical reference image, clean white background, ';
-    viewPrompt += 'professional 3D modeling reference, consistent lighting, ';
-    viewPrompt += 'detailed but clear, suitable for 3D reconstruction';
-    
-    switch (view) {
-      case 'front':
-        viewPrompt += ', front-facing view showing main features and proportions';
-        break;
-      case 'back':
-        viewPrompt += ', rear view showing back details and construction';
-        break;
-      case 'top':
-        viewPrompt += ', overhead view showing top layout and proportions';
-        break;
-      case 'left':
-        viewPrompt += ', left side profile showing side details and proportions';
-        break;
-      case 'right':
-        viewPrompt += ', right side profile showing opposite side details';
-        break;
-    }
-    
     try {
-      const result = await generateImage({
-        provider: model,
-        prompt: viewPrompt,
-        outputPath,
-        size: model === 'openai' ? '1024x1024' : undefined,
-        image_size: model === 'falai' ? 'square_hd' : undefined,
-      });
+      let result;
+      
+      if (i === 0) {
+        // First view: generate from text prompt
+        let viewPrompt = `${prompt}, ${view} view, `;
+        viewPrompt += 'sharp technical reference image, clean white background, ';
+        viewPrompt += 'professional 3D modeling reference, consistent lighting, ';
+        viewPrompt += 'highly detailed, crisp details, sharp focus, ';
+        viewPrompt += 'shot on Sony A7R IV with 85mm f/1.4 lens, ';
+        viewPrompt += 'professional product photography, suitable for 3D reconstruction';
+        
+        switch (view) {
+          case 'front':
+            viewPrompt += ', front-facing view showing main features and proportions, sharp edges, fine details';
+            break;
+          case 'back':
+            viewPrompt += ', rear view showing back details and construction, sharp edges, fine details';
+            break;
+          case 'top':
+            viewPrompt += ', overhead view showing top layout and proportions, sharp edges, fine details';
+            break;
+          case 'left':
+            viewPrompt += ', left side profile showing side details and proportions, sharp edges, fine details';
+            break;
+          case 'right':
+            viewPrompt += ', right side profile showing opposite side details, sharp edges, fine details';
+            break;
+        }
+        
+        result = await generateImage({
+          provider: model,
+          prompt: viewPrompt,
+          outputPath,
+          size: model === 'openai' ? '1024x1024' : undefined,
+          image_size: model === 'falai' ? 'square_hd' : undefined,
+        });
+      } else {
+        // Subsequent views: use previous image(s) as input for consistency
+        const inputImagePaths = referencePaths.slice(); // Use all previously generated images
+        
+        let viewPrompt = `Create a ${view} view of the same object, maintaining exact consistency `;
+        viewPrompt += 'with the provided image(s). Sharp technical reference image, clean white background, ';
+        viewPrompt += 'professional 3D modeling reference, consistent lighting, ';
+        viewPrompt += 'highly detailed, crisp details, sharp focus, ';
+        viewPrompt += 'shot on Sony A7R IV with 85mm f/1.4 lens, ';
+        viewPrompt += 'professional product photography, suitable for 3D reconstruction';
+        
+        switch (view) {
+          case 'front':
+            viewPrompt += ', front-facing view showing main features and proportions, sharp edges, fine details';
+            break;
+          case 'back':
+            viewPrompt += ', rear view showing back details and construction, sharp edges, fine details';
+            break;
+          case 'top':
+            viewPrompt += ', overhead view showing top layout and proportions, sharp edges, fine details';
+            break;
+          case 'left':
+            viewPrompt += ', left side profile showing side details and proportions, sharp edges, fine details';
+            break;
+          case 'right':
+            viewPrompt += ', right side profile showing opposite side details, sharp edges, fine details';
+            break;
+        }
+        
+        result = await generateImage({
+          provider: model,
+          prompt: viewPrompt,
+          outputPath,
+          inputImagePaths,
+          size: model === 'openai' ? '1024x1024' : undefined,
+          image_size: model === 'falai' ? 'square_hd' : undefined,
+        });
+      }
       
       const parsedResult = JSON.parse(result);
       if (parsedResult.savedPaths && parsedResult.savedPaths.length > 0) {
