@@ -7,7 +7,7 @@ A Model Context Protocol (MCP) server for generating various types of assets inc
 - **Image Generation**: Support for multiple providers (OpenAI DALL-E, Google Gemini, Fal.ai)
 - **Video Generation**: Coming soon
 - **Audio Generation**: Coming soon  
-- **3D Model Generation**: Coming soon
+- **3D Model Generation**: Generate 3D models using FAL.ai Trellis and Hunyuan3D 2.0
 - **Game Development Focus**: Optimized for creating game assets
 
 ## Installation
@@ -56,6 +56,22 @@ The server provides tools and prompts for asset generation through the MCP proto
     - `width` (optional): Image width in pixels
     - `height` (optional): Image height in pixels
 
+- `trellis_generate_3d_model`: Generate 3D models using FAL.ai Trellis
+  - Parameters:
+    - `prompt` (required): Text description of the 3D model
+    - `input_image_uris` (optional): Array of base64 image URIs for reference (auto-generated if not provided)
+    - `output_path` (required): Path to save the generated 3D model (.glb or .gltf)
+    - `format` (optional): Output format ('glb' or 'gltf', default: 'glb')
+    - `variant` (optional): Model variant ('single' or 'multi', default: auto-selected)
+
+- `hunyuan3d_generate_3d_model`: Generate 3D models using FAL.ai Hunyuan3D 2.0
+  - Parameters:
+    - `prompt` (required): Text description of the 3D model
+    - `input_image_uris` (optional): Array of base64 image URIs for reference (auto-generated if not provided)
+    - `output_path` (required): Path to save the generated 3D model (.glb or .gltf)
+    - `format` (optional): Output format ('glb' or 'gltf', default: 'glb')
+    - `variant` (optional): Model variant ('single', 'multi', 'single-turbo', or 'multi-turbo', default: auto-selected)
+
 ### Available Prompts
 
 - `asset_generation`: Generate various types of assets for game development
@@ -92,6 +108,8 @@ export ALLOWED_TOOLS="openai_generate_image,gemini_generate_image,generate_textu
 # - generate_pixel_art_character (now with transparent background support)
 # - generate_texture (now with transparent background support for sprites/decals)
 # - generate_object_sheet
+# - trellis_generate_3d_model
+# - hunyuan3d_generate_3d_model
 
 ## Transparent Background Generation
 

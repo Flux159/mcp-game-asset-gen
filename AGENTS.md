@@ -37,9 +37,12 @@ This file contains instructions for future agents working on this MCP server pro
 src/
 ├── index.ts              # Main MCP server entry point
 ├── utils/
-│   └── imageUtils.ts     # Utility functions for image processing
+│   ├── imageUtils.ts     # Utility functions for image processing
+│   └── model3dUtils.ts   # 3D model generation utilities
 ├── providers/
-│   └── imageProviders.ts # Image generation provider implementations
+│   ├── imageProviders.ts # Image generation provider implementations
+│   ├── imageHelpers.ts   # Helper functions for image generation
+│   └── model3dHelpers.ts # Helper functions for 3D model generation
 └── *.test.ts            # Test files
 ```
 
@@ -56,8 +59,8 @@ src/
 
 Required environment variables:
 - `OPENAI_API_KEY` - OpenAI API key for image generation
-- `GEMINI_API_KEY` - Google Gemini API key
-- `FAL_AI_API_KEY` - FAL.ai API key
+- `GEMINI_API_KEY` - Google Gemini API key for image generation and reference image generation
+- `FAL_AI_API_KEY` - FAL.ai API key for image generation and 3D model generation
 
 Optional environment variables:
 - `ALLOWED_TOOLS` - Comma-separated list of tools to make available (default: all tools)
@@ -70,6 +73,24 @@ Optional environment variables:
 - Error handling returns structured responses
 - All tools return JSON strings with metadata
 - Tool filtering via `ALLOWED_TOOLS` environment variable for reduced context usage
+
+## 3D Model Generation
+
+### Supported Models
+- **Trellis** (FAL.ai): Single and multi-image variants
+- **Hunyuan3D 2.0** (FAL.ai): Single, multi, single-turbo, and multi-turbo variants
+
+### Features
+- **Automatic Reference Generation**: When only text prompt is provided, automatically generates reference images using Gemini
+- **Base64 URI Support**: Default input format for images
+- **Smart Variant Selection**: Automatically chooses single vs multi based on input image count
+- **GLB/GLTF Output**: Web and game engine compatible 3D formats
+
+### Implementation Details
+- Core functions in `src/utils/model3dUtils.ts`
+- Helper functions with automatic reference generation in `src/providers/model3dHelpers.ts`
+- Tool schemas and handlers in `src/index.ts`
+- Comprehensive tests in `src/model3dHelpers.test.ts`
 
 ## Testing Guidelines
 
