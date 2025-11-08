@@ -350,6 +350,11 @@ export const hunyuan3DGenerateMulti = async (args: {
 }): Promise<Model3DGenerationResult> => {
   const apiKey = getFalAIKey();
   
+  // Validate that we have at least 3 images for front, back, left views
+  if (args.imagePaths.length < 3) {
+    throw new Error(`Hunyuan3D Multi requires at least 3 images (front, back, left views). Only ${args.imagePaths.length} images provided.`);
+  }
+  
   // Convert images to base64 URIs if they are file paths
   const imageUris = await Promise.all(
     args.imagePaths.map(async (path) => {
@@ -361,8 +366,16 @@ export const hunyuan3DGenerateMulti = async (args: {
     })
   );
   
+  // Map images to required view positions
+  // Expected order: front, back, left (minimum required)
+  const frontImage = imageUris[0];
+  const backImage = imageUris[1];
+  const leftImage = imageUris[2];
+  
   const body = {
-    image_urls: imageUris,
+    front_image_url: frontImage,
+    back_image_url: backImage,
+    left_image_url: leftImage,
     format: args.format || 'glb',
   };
   
@@ -473,6 +486,11 @@ export const hunyuan3DGenerateMultiTurbo = async (args: {
 }): Promise<Model3DGenerationResult> => {
   const apiKey = getFalAIKey();
   
+  // Validate that we have at least 3 images for front, back, left views
+  if (args.imagePaths.length < 3) {
+    throw new Error(`Hunyuan3D Multi Turbo requires at least 3 images (front, back, left views). Only ${args.imagePaths.length} images provided.`);
+  }
+  
   // Convert images to base64 URIs if they are file paths
   const imageUris = await Promise.all(
     args.imagePaths.map(async (path) => {
@@ -484,8 +502,16 @@ export const hunyuan3DGenerateMultiTurbo = async (args: {
     })
   );
   
+  // Map images to required view positions
+  // Expected order: front, back, left (minimum required)
+  const frontImage = imageUris[0];
+  const backImage = imageUris[1];
+  const leftImage = imageUris[2];
+  
   const body = {
-    image_urls: imageUris,
+    front_image_url: frontImage,
+    back_image_url: backImage,
+    left_image_url: leftImage,
     format: args.format || 'glb',
   };
   
