@@ -32,6 +32,11 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
+      - name: Checkout main branch
+        run: |
+          git checkout main
+          git pull origin main
+
       - name: Update version numbers
         run: |
           # Update the version in all files using the npm script
