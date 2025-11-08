@@ -5,6 +5,12 @@ import {
   mergeWithDefaults,
   type ImageGenerationOptions,
 } from './providers/imageHelpers.js';
+import {
+  convertToTransparentBackground,
+  checkTransparencySupportAvailable,
+} from './utils/imageUtils.js';
+import fs from 'fs';
+import path from 'path';
 
 describe('Image Helpers', () => {
   describe('validateImageOptions', () => {
@@ -144,6 +150,79 @@ describe('Image Helpers', () => {
 
       expect(merged.guidance_scale).toBe(10); // User option preserved
       expect(merged.num_inference_steps).toBe(20); // Default applied
+    });
+  });
+
+  describe('Transparency Conversion', () => {
+    it('should check transparency support availability', async () => {
+      const isSupported = await checkTransparencySupportAvailable();
+      expect(isSupported).toBe(true);
+    });
+
+    it('should convert image to transparent background', async () => {
+      const testDir = path.join(process.cwd(), 'test_assets');
+      const inputPath = path.join(testDir, 'grass_texture.png');
+      const outputPath = path.join(testDir, 'test_transparent.png');
+
+      if (!fs.existsSync(inputPath)) {
+        // Skip test if test image doesn't exist
+        console.log('Skipping transparency test - grass_texture.png not found');
+        return;
+      }
+
+      try {
+        // Convert to transparent
+        const result = await convertToTransparentBackground(inputPath, outputPath, {
+          backgroundColor: 'white',
+          tolerance: 30
+        });
+
+        expect(result).toBe(outputPath);
+        expect(fs.existsSync(outputPath)).toBe(true);
+
+        // Check that output file exists and has reasonable size
+        const outputStats = fs.statSync(outputPath);
+        expect(outputStats.size).toBeGreaterThan(0);
+
+      } finally {
+        // Clean up
+        try {
+          if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+        } catch (cleanupError) {
+          // Ignore cleanup errors
+        }
+      }
+    });
+
+    it('should handle different background colors', async () => {
+      // Test that the function accepts different background color options
+      const testDir = path.join(process.cwd(), 'test_assets');
+      const inputPath = path.join(testDir, 'grass_texture.png');
+      const outputPath = path.join(testDir, 'test_transparent_auto.png');
+
+      if (!fs.existsSync(inputPath)) {
+        // Skip test if test image doesn't exist
+        console.log('Skipping transparency test - test image not found');
+        return;
+      }
+
+      try {
+        const result = await convertToTransparentBackground(inputPath, outputPath, {
+          backgroundColor: 'auto',
+          tolerance: 50
+        });
+
+        expect(result).toBe(outputPath);
+        expect(fs.existsSync(outputPath)).toBe(true);
+
+      } finally {
+        // Clean up
+        try {
+          if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+        } catch (cleanupError) {
+          // Ignore cleanup errors
+        }
+      }
     });
   });
 });

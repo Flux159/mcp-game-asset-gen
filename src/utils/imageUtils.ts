@@ -3,6 +3,7 @@ import { promisify } from "util";
 import { config } from "dotenv";
 import path from "path";
 import { readFileSync, writeFileSync, mkdirSync, unlinkSync } from "fs";
+import { createCanvas, loadImage } from "canvas";
 
 // Load environment variables from the root .env file
 config({ path: path.resolve(process.cwd(), ".env") });
@@ -159,16 +160,14 @@ export const convertToTransparentBackground = async (
     const outputDir = path.dirname(outputPath);
     mkdirSync(outputDir, { recursive: true });
 
-    // For now, implement a basic version that copies the file
-    // In a future iteration, we can implement full PNG parsing
-    console.warn('Native transparency conversion is simplified - consider installing sharp for full functionality');
-    
     // Read the input image
     const imageBuffer = readFileSync(inputPath);
     
-    // For now, just copy the file as a placeholder
-    // TODO: Implement full PNG pixel manipulation
-    writeFileSync(outputPath, imageBuffer);
+    // Parse PNG and convert background pixels to transparent
+    const transparentBuffer = await convertImagePixelsToTransparent(imageBuffer, backgroundColor, tolerance);
+    
+    // Write the transparent image
+    writeFileSync(outputPath, transparentBuffer);
     
     return outputPath;
   } catch (error) {
@@ -239,6 +238,83 @@ export const generateTransparentImage = async (
     return finalPath;
   } catch (error) {
     throw new Error(`Failed to generate transparent image: ${error instanceof Error ? error.message : String(error)}`);
+  }
+};
+
+// Convert image pixels to transparent using canvas
+const convertImagePixelsToTransparent = async (
+  imageBuffer: Buffer,
+  backgroundColor: 'white' | 'black' | 'auto',
+  tolerance: number
+): Promise<Buffer> => {
+  try {
+    // Load the image
+    const image = await loadImage(imageBuffer);
+    
+    // Create canvas with the same dimensions
+    const canvas = createCanvas(image.width, image.height);
+    const ctx = canvas.getContext('2d');
+    
+    // Draw the image
+    ctx.drawImage(image, 0, 0);
+    
+    // Get image data
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const data = imageData.data;
+    
+    // Determine target color based on background type
+    let targetR = 255, targetG = 255, targetB = 255; // Default to white
+    
+    if (backgroundColor === 'black') {
+      targetR = 0; targetG = 0; targetB = 0;
+    } else if (backgroundColor === 'auto') {
+      // Sample corners to determine background color
+      const corners = [
+        { x: 0, y: 0 }, // top-left
+        { x: canvas.width - 1, y: 0 }, // top-right
+        { x: 0, y: canvas.height - 1 }, // bottom-left
+        { x: canvas.width - 1, y: canvas.height - 1 } // bottom-right
+      ];
+      
+      let totalR = 0, totalG = 0, totalB = 0;
+      for (const corner of corners) {
+        const idx = (corner.y * canvas.width + corner.x) * 4;
+        totalR += data[idx];
+        totalG += data[idx + 1];
+        totalB += data[idx + 2];
+      }
+      
+      targetR = Math.round(totalR / 4);
+      targetG = Math.round(totalG / 4);
+      targetB = Math.round(totalB / 4);
+    }
+    
+    // Convert pixels matching target color to transparent
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i];
+      const g = data[i + 1];
+      const b = data[i + 2];
+      
+      // Calculate color distance from target
+      const distance = Math.sqrt(
+        Math.pow(r - targetR, 2) + 
+        Math.pow(g - targetG, 2) + 
+        Math.pow(b - targetB, 2)
+      );
+      
+      // If within tolerance, make transparent
+      if (distance <= tolerance) {
+        data[i + 3] = 0; // Set alpha to 0 (transparent)
+      }
+    }
+    
+    // Put the modified image data back
+    ctx.putImageData(imageData, 0, 0);
+    
+    // Convert to buffer
+    return canvas.toBuffer('image/png');
+  } catch (error) {
+    throw new Error(`Failed to convert image pixels: ${error instanceof Error ? error.message : String(error)}`);
   }
 };
 
