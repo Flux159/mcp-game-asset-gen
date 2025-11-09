@@ -1,6 +1,10 @@
 # MCP Asset Generation Server
 
+<img width="1645" height="1034" alt="Screenshot 2025-11-09 at 9 15 04 AM" src="https://github.com/user-attachments/assets/d2bc7cda-8a09-4588-b3c8-7f430cfde2ee" />
+
 A Model Context Protocol (MCP) server for generating various types of assets including images, videos, audio, and 3D models for game development.
+
+Three.js sample scene in [demo video](https://www.youtube.com/watch?v=KSVpJFqF5hg) located at [flux159/three-generator](https://github.com/Flux159/three-generator).
 
 ## Features
 
