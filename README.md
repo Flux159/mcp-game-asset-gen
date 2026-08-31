@@ -1,6 +1,8 @@
+
+
 # MCP Asset Generation Server
 
-<img width="1645" height="1034" alt="Screenshot 2025-11-09 at 9 15 04 AM" src="https://github.com/user-attachments/assets/d2bc7cda-8a09-4588-b3c8-7f430cfde2ee" />
+<img width="1645" height="1034" alt="Screenshot 2025-11-09 at 9 15 04 AM" src="https://github.com/user-attachments/assets/d2bc7cda-8a09-4588-b3c8-7f430cfde2ee" />
 
 A Model Context Protocol (MCP) server for generating various types of assets including images, videos, audio, and 3D models for game development.
 
@@ -31,7 +33,7 @@ npm run build
 ## Development
 
 ```bash
-# Run in development mode with hot reload
+# Run in development mode (builds and starts)
 npm run dev
 
 # Run tests
